@@ -1,10 +1,12 @@
 import React from 'react'
 import SideBarAdmin from '../components/nav/SideBarAdmin'
 import NavBarAdmin from '../components/nav/NavBarAdmin'
+import { ToastContainer } from 'react-toastify'
 
 function AdminLayout({children}) {
   return (
     <>
+    <ToastContainer />
     <div className='bg-main text-white flex flex-row'>
         <SideBarAdmin/>
         <div

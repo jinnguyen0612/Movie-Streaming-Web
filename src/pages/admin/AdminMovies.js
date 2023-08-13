@@ -6,28 +6,179 @@ import { GiCancel } from 'react-icons/gi';
 import { Movies } from './../../Data/MovieData';
 import { TbLock, TbLockOpen } from 'react-icons/tb';
 import { FaEdit } from 'react-icons/fa';
+import axios from '../../api/axios';
+import { toast } from 'react-toastify';
+import { useLocation } from 'react-router-dom';
+import axiosApiInstance from '../../context/intercepter';
+import { useEffect } from 'react';
 
 function AdminMovies() {
-  const [showModal, setShowModal] = useState(false);
-  const [blockStatus, setBlockStatus] = useState(true);
+  const param = useLocation();
+
+  const [load, setLoad] = useState(false);
+  const [show, setShow] = useState(false);
+  const [film, setFilm] = useState([]);
+  const [photo, setPhoto] = useState();
+  const [filePhoto, setFilePhoto] = useState();
+  const [video, setVideo] = useState();
+  const [fileVideo, setFileVideo] = useState();
+  const [form, setForm] = useState();
+
+  const [film_name, setName] = useState();
+  const [length, setLength] = useState();
+  const [productionYear, setProductionYear] = useState();
+  const [decription, setDecription] = useState();
+  const [price, setPrice] = useState();
+  const [genreID, setGenreID] = useState();
+  const [status, setStatus] = useState(true);
+  const [id, setID] = useState();
+
+  const [change, setChange] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastPage,setLastPage] = useState(1);
+  const [filmsPerPage] = useState(10);
+  const indexOfLastFilms = currentPage * filmsPerPage;
+  const indexOfFirstFilms = indexOfLastFilms - filmsPerPage;
+  const currentFilm = film.slice(indexOfFirstFilms, indexOfLastFilms);
+  const [block, setBlock] = useState();
+
+
+  const paginateFront = () => setCurrentPage(currentPage + 1);
+  const paginateBack = () => setCurrentPage(currentPage - 1);
+
+  async function getFilms() {
+      const result = await axiosApiInstance.get(axiosApiInstance.defaults.baseURL + `/films/getAll`);
+      setLoad(true);
+      setFilm(result?.data);
+  }
+
+  useEffect(() => {
+      getFilms();
+      film.length%10==0? setLastPage(Math.floor(film.length/10)):setLastPage(Math.floor(film.length/10)+1);
+    }, [param,film.length,photo]);
   const [title, setTitle] = useState("");
   const Head = "text-xs text-center text-main font-semibold px-6 py-2 uppercase";
   const Text = "text-sm text-center leading-6 whitespace-nowrap px-5 py-3";
 
-  const Create = () =>{
-    setShowModal(true); 
-    setTitle("Create Movie");
-  };
-  const Edit = () =>{
-    setShowModal(true); setTitle("Edit Movie");
-  };
-  const Submit = () =>{
-    setShowModal(false);
+  const handleClose = () => {
+    setShow(false);
+    setName(null);
+    setPhoto(null);
+    setFilePhoto(null);
+    setVideo(null);
+    setFileVideo(null);
+    setDecription(null);
+    setLength(null);
+    setGenreID(null);
+    setPrice(null);
+    setProductionYear(null);
+    setStatus(true);
+  }
+
+  const handleInfo = (e) => {
+    const id = e.currentTarget.getAttribute("data-id");
+    const name = e.currentTarget.getAttribute("data-name");
+    const photo = e.currentTarget.getAttribute("data-photo");
+
+    setForm("edit");
+    setTitle("Edit Film");
+    setName(name);
+    setID(id);
+    setPhoto(photo);
+    setShow(true);
+  }
+
+  const handleShowAdd = (e) => {
+    setName(null);
+    setPhoto(null);
+    setFilePhoto(null);
+    setVideo(null);
+    setFileVideo(null);
+    setDecription(null);
+    setLength(null);
+    setGenreID(null);
+    setPrice(null);
+    setProductionYear(null);
+    setStatus(true);
+    setID(null);
+    setForm("add");
+    setShow(true);
+    setTitle("Add Film")
+  }
+
+  const handleFilePhotoChange = (e) => {
+    const selectedFile = e.target.files[0];
+    setFilePhoto(selectedFile);
   };
 
-  const Block = (id)=>{
-    setBlockStatus(!blockStatus);
-  }
+  const handlePhotoUpload = async () => {
+    if (!filePhoto) {
+      toast.error("Vui lòng chọn tệp ảnh");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("photo", filePhoto);
+
+    try {
+      const response = await axios.post(
+        axios.defaults.baseURL + `/upload/photo`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      if (response?.data.message === "Upload success") {
+        toast.success("Tải ảnh lên thành công");
+        setPhoto(response.data.picture_url.toString());
+      } else {
+        toast.error("Có lỗi xảy ra. Vui lòng thử lại.");
+      }
+
+      // Sau khi hoàn thành, bạn có thể làm sạch trạng thái file
+    } catch (error) {
+      toast.error("Đã xảy ra lỗi khi tải ảnh lên. Vui lòng thử lại.");
+    }
+  };
+
+  const handleFileVideoChange = (e) => {
+    const selectedFile = e.target.files[0];
+    setFileVideo(selectedFile);
+  };
+
+  const handleVideoUpload = async () => {
+    if (!fileVideo) {
+      toast.error("Vui lòng chọn tệp ảnh");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("video_file", fileVideo);
+
+    try {
+      const response = await axios.post(
+        axios.defaults.baseURL + `/upload/photo`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      if (response?.data.message === "Upload success") {
+        toast.success("Tải ảnh lên thành công");
+        setPhoto(response.data.picture_url.toString());
+      } else {
+        toast.error("Có lỗi xảy ra. Vui lòng thử lại.");
+      }
+
+      // Sau khi hoàn thành, bạn có thể làm sạch trạng thái file
+    } catch (error) {
+      toast.error("Đã xảy ra lỗi khi tải ảnh lên. Vui lòng thử lại.");
+    }
+  };
 
   return (
     <AdminLayout>
@@ -37,7 +188,7 @@ function AdminMovies() {
                 <div className='flex-btn gap-2'>
                     <h2 className='text-xl font-bold'>Movies</h2>
                     <div className='flex flex-row'>
-                        <button type="button" onClick={Create} className='bg-main font-medium transitions hover:bg-green-400 border border-green-400 text-green-400 hover:text-white py-3 px-6 rounded ml-2 flex flex-row'>
+                        <button type="button" onClick={handleShowAdd} className='bg-main font-medium transitions hover:bg-green-400 border border-green-400 text-green-400 hover:text-white py-3 px-6 rounded ml-2 flex flex-row'>
                             <MdAddCircle className='w-6 h-6 mr-1'/> Add Movie
                         </button>
                     </div>
@@ -75,28 +226,28 @@ function AdminMovies() {
                 </thead>
                   <tbody className='bg-main divide-y divide-gray-800'>
                       {
-                        Movies.map((movie,index)=>(
-                          <tr key={index}>
-                              <td className={`${Text} truncate`}>{movie.id}</td>
-                              <td className={`${Text}`}>{movie.name}</td>
+                        film.map((movie,index)=>(
+                          <tr key={movie.id}>
+                              <td className={`${Text} truncate`}>{(currentPage-1)*10+index+1}</td>
+                              <td className={`${Text}`}>{movie.title}</td>
                               <td className={`${Text}`}>
                                   <div className='w-12 bg-dry border border-border h-12 rounded overflow-hidden'>
                                       <img
                                       className='h-12 w-12 object-cover'
-                                      src={`/image/movies/${movie.titleImage}`}
-                                      alt={movie?.name}/>    
+                                      src={`${movie.poster}`}
+                                      alt={movie?.title}/>    
                                   </div>
                               </td>
-                              <td className={`${Text}`}>{movie.category}</td>
-                              <td className={`${Text}`}>{movie.year}</td>
-                              <td className={`${Text}`}>{movie.time}</td>
+                              <td className={`${Text}`}>{movie.genre.name}</td>
+                              <td className={`${Text}`}>{movie.production_year}</td>
+                              <td className={`${Text}`}>{movie.length}</td>
                   
                               <td className={`${Text} flex-rows gap-2 mt-2`}>
-                                  <button type='button' onClick={Edit} className='border border-white bg-yellow-200 flex-rows gap-2 text-main rounded py-1 px-2'>
+                                  <button type='button' onClick={handleInfo} className='border border-white bg-yellow-200 flex-rows gap-2 text-main rounded py-1 px-2'>
                                       <FaEdit/> Edit
                                   </button>
-                                  <button type = 'button' onClick={Block} className='border border-white bg-subMain flex-rows gap-2 text-white rounded py-1 px-2'>
-                                      {blockStatus?<TbLock className='w-6 h-6'/>:<TbLockOpen className='w-6 h-6'/>}
+                                  <button type = 'button' className='border border-white bg-subMain flex-rows gap-2 text-white rounded py-1 px-2'>
+                                      {!movie.status?<TbLock className='w-6 h-6'/>:<TbLockOpen className='w-6 h-6'/>}
                                   </button>
                               </td>
                           </tr>
@@ -106,7 +257,7 @@ function AdminMovies() {
           </div>
         </div>
         
-        {showModal ? (
+        {show ? (
         <>
           <div className="flex justify-center items-center overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none">
             <div className="relative w-auto my-6 mx-auto max-w-3xl">
@@ -115,7 +266,7 @@ function AdminMovies() {
                   <h3 className="text-3xl font=semibold">{title}</h3>
                   <button
                     className="bg-transparent border-0 text-black float-right"
-                    onClick={() => setShowModal(false)}
+                    onClick={handleClose}
                   >
                     <GiCancel className="text-white h-6 w-6 text-xl blockpy-0"/>
                   </button>
@@ -125,29 +276,55 @@ function AdminMovies() {
                     <label className="block text-dryGray text-sm font-medium mb-1">
                       Movie Name
                     </label>
-                    <input className="shadow bg-main appearance-none rounded w-full py-2 px-1 border border-border text-white" />
+                    <input 
+                      required
+                      value={film_name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="shadow bg-main appearance-none rounded w-full py-2 px-1 border border-border text-white" />
+                    <label className="block text-dryGray text-sm font-medium mb-1">
+                      Poster
+                    </label>
+                    <div>
+                      <input 
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFilePhotoChange}
+                        className="shadow bg-main appearance-none rounded w-full py-2 px-1 border border-border text-white" />
+                      {filePhoto?
+                        <button type='button' onClick={handlePhotoUpload}>Upload</button>
+                        :<></>
+                      }
+                    </div>
                     <label className="block text-dryGray text-sm font-medium mb-1">
                       Decription
                     </label>
-                    <input className="shadow bg-main appearance-none rounded w-full py-2 px-1 border border-border text-white" />
+                    <input 
+                      required
+                      value={decription}
+                      onChange={(e) => setDecription(e.target.value)}
+                      className="shadow bg-main appearance-none rounded w-full py-2 px-1 border border-border text-white" />                    
                     <label className="block text-dryGray text-sm font-medium mb-1">
-                      Genre Name
+                      Length
                     </label>
-                    <input className="shadow bg-main appearance-none rounded w-full py-2 px-1 border border-border text-white" />
+                    <input 
+                      required
+                      value={length}
+                      onChange={(e) => setLength(e.target.value)}
+                      className="shadow bg-main appearance-none rounded w-full py-2 px-1 border border-border text-white" />
                   </form>
                 </div>
                 <div className="flex items-center justify-end p-6 rounded-b">
                   <button
                     className="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1"
                     type="button"
-                    onClick={() => setShowModal(false)}
+                    onClick={handleClose}
                   >
                     Close
                   </button>
                   <button
                     className="text-white bg-green-500 active:bg-yellow-700 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1"
                     type="button"
-                    onClick={Submit}
+                    onClick={handleClose}
                   >
                     Submit
                   </button>

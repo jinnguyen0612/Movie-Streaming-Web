@@ -11,6 +11,10 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const {login}= useContext(AuthContext)
+  const [emailMsgOut, setEmailMsgOut] = useState("");
+  const [passwordMsgOut, setpasswordMsgOut] = useState("");
+  const [loginMsgOut, setLoginMsgOut] = useState("");
+
 
   const [pwdShown, setPwdShown] = useState(false);
 
@@ -20,10 +24,17 @@ function LoginPage() {
 
 const handleLogin = async (e) => {
       e.preventDefault()
+      email==''?setEmailMsgOut("(PLEASE INPUT YOUR EMAIL)"):setEmailMsgOut('');
+      password==''?setpasswordMsgOut("(PLEASE INPUT YOUR PASSWORD)"):setpasswordMsgOut('');
       const formData = new URLSearchParams();
       formData.append('username', email);
       formData.append('password', password);
-      await login(formData);
+      try {
+        await login(formData);
+        setLoginMsgOut('')
+      } catch (error) {
+        setLoginMsgOut("EMAIL OR PASSWORD IS INCORRECT")
+      }
   }
 
   return (
@@ -35,7 +46,7 @@ const handleLogin = async (e) => {
             alt='logo'
             className='w-full h-12 object-contain'/>
           <div className="text-sm w-full">
-            <label className="text-border font-semibold">Email</label>
+            <label className="text-border font-semibold">Email {' '} <span className='text-subMain'>{emailMsgOut}</span></label>
             <input
                 required
                 value={email}
@@ -47,7 +58,7 @@ const handleLogin = async (e) => {
           </div>
 
           <div className="text-sm w-full relative">
-            <label className="text-border font-semibold">Password</label>
+            <label className="text-border font-semibold">Password {' '} <span className='text-subMain'>{passwordMsgOut}</span></label>
             <input
                 required
                 value={password}
@@ -65,11 +76,13 @@ const handleLogin = async (e) => {
               }
             </button>
           </div>
-          <Link 
+          <span className='text-subMain'>{loginMsgOut}</span>
+          <button
+            type='button' 
             onClick={handleLogin}
             className="bg-subMain transitions hover:bg-main flex-rows gap-4 text-white py-4 rounded-lg w-full">
               <FiLogIn/> Sign In
-            </Link>
+            </button>
           <p className='text-center text-border'>
             Don't have an account?{" "}
             <Link to="/register" className="text-dryGray font-semibold ml-2">

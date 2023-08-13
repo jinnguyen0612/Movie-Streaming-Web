@@ -2,8 +2,11 @@ import React from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { FaSearch,FaHeart,FaAngleDown } from 'react-icons/fa'
 import {CgUser} from 'react-icons/cg'
+import { useContext } from 'react'
+import AuthContext from '../../context/AuthProvider'
 
 function NavBar() {
+  const {logout}= useContext(AuthContext)
   const hover = "hover:text-subMain transitions text-white";
   const Hover = ({isActive}) => (isActive? 'text-subMain':hover);
   const [open, setOpen] = React.useState(false);
@@ -47,26 +50,39 @@ function NavBar() {
                   5
                 </div>
               </NavLink>
+              {
+                (JSON.parse(localStorage.getItem('tokens'))) ?
+                <>
+                  <div className="relative">
+                    <button onClick={handleOpen} className='flex flex-rows'>
+                      <CgUser className="w-8 h-8"/>
+                      <FaAngleDown/>
+                    </button>
+                    {open ? (
+                      <ul className="absolute right-0 border border-border bg-dry py-1 w-48">
+                        <li className="p-1 border border-dry hover:border-white hover:text-subMain hover:font-semibold">
+                          <a className='block p-3' href='/profile'>Profile</a>
+                        </li>
+                        <li className="p-1 border border-dry hover:border-white hover:text-subMain hover:font-semibold">
+                          <a className='block p-3' href='/password'>Change Password</a>
+                        </li>
+                        <li className="p-1 border border-dry hover:border-white hover:text-subMain hover:font-semibold">
+                          <button className='w-full text-left p-3' type='button' onClick={() => logout()}>Logout</button>
+                        </li>
+                      </ul>
+                    ) : null}
+                  </div>
+                </>:
+                <>
+                  <div className='px-6 py-2 bg-subMain border hover:bg-dry hover:border-subMain'>
+                    <a href='/login'>Login</a>
+                  </div>
+                </>
+              }
+
+                  
+
               
-              <div className="relative">
-                <button onClick={handleOpen} className='flex flex-rows'>
-                  <CgUser className="w-8 h-8"/>
-                  <FaAngleDown/>
-                </button>
-                {open ? (
-                  <ul className="absolute right-0 border border-border bg-dry py-1 w-48">
-                    <li className="p-1 border border-dry hover:border-white hover:text-subMain hover:font-semibold">
-                      <a className='block p-3' href='/profile'>Profile</a>
-                    </li>
-                    <li className="p-1 border border-dry hover:border-white hover:text-subMain hover:font-semibold">
-                      <a className='block p-3' href='/password'>Change Password</a>
-                    </li>
-                    <li className="p-1 border border-dry hover:border-white hover:text-subMain hover:font-semibold">
-                      <button className='w-full text-left p-3'>Logout</button>
-                    </li>
-                  </ul>
-                ) : null}
-              </div>
 
             </div>
         </div>

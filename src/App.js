@@ -33,52 +33,38 @@ import jwtDecode from 'jwt-decode';
 function App() {
   Aos.init();
   const tokens = JSON.parse(localStorage.getItem('tokens'));
-  let permission = '';
-  let isLoggedIn = false;
-
-  if (tokens) {
-    const decode = jwtDecode(tokens.access_token);
-    permission = decode.role;
-    isLoggedIn = true;
-  }
-  else {
-    permission = '';
-    isLoggedIn = false;
-  }
+    const permission = tokens ? jwtDecode(tokens.access_token).role : '';
   return (
     <AuthContextProvider>
       <Routes>
         <Route path="/login" element={<LoginPage/>}/>
-        {isLoggedIn && permission === 'ADMIN'?
-        <>
-        <Route path="/" element={<DashBoard/>}/>
-        <Route path="/customer" element={<Customer/>}/>
-        <Route path="/manage-movie" element={<AdminMovies/>}/>
-        <Route path="/genre" element={<Genres/>}/>
-        <Route path="/actor" element={<Actor/>}/>
-        <Route path="/pricing" element={<Pricing/>}/>
-        <Route path="/payment" element={<Payment/>}/>
-        <Route path="/admin-profile" element={<AdminProfile/>}/>
-        </>:
-        <>{isLoggedIn && permission === 'CUSTOMER'?
-        <>
-        <Route path="/profile" element={<Profile/>}/>
-        <Route path="/password" element={<ChangePass/>}/>
-        <Route path="/favorite" element={<Favorite/>}/>
-        <Route path="/watch/:id" element={<WatchPage/>}/>
-        </>
-        :<>
-        <Route path="/" element={<Home/>}/>
-        <Route path="/about" element={<About/>}/>
-        <Route path="/contact" element={<Contact/>}/>
-        <Route path="/movies" element={<MoviesPage/>}/>
-        <Route path="/register" element={<Register/>}/>
-        <Route path="/movies/:id" element={<SingleMovie/>}/>
-        <Route path='/forgot-pass' element={<UserFogotPass/>} />
-        <Route path='/change-pass' element={<UserChangePass/>} />
-        <Route path="/verify-code=:code" element={<Verify/>} /> 
-        </>}
-        </>
+          {permission === 'ADMIN'?
+          (<>
+            <Route path="/" element={<DashBoard/>}/>
+            <Route path="/customer" element={<Customer/>}/>
+            <Route path="/manage-movie" element={<AdminMovies/>}/>
+            <Route path="/genre" element={<Genres/>}/>
+            <Route path="/actor" element={<Actor/>}/>
+            <Route path="/pricing" element={<Pricing/>}/>
+            <Route path="/payment" element={<Payment/>}/>
+            <Route path="/admin-profile" element={<AdminProfile/>}/>
+          </>)
+          :
+          (<>
+            <Route path="/profile" element={<Profile/>}/>
+            <Route path="/password" element={<ChangePass/>}/>
+            <Route path="/favorite" element={<Favorite/>}/>
+            <Route path="/watch/:id" element={<WatchPage/>}/>
+            <Route path="/" element={<Home/>}/>
+            <Route path="/about" element={<About/>}/>
+            <Route path="/contact" element={<Contact/>}/>
+            <Route path="/movies" element={<MoviesPage/>}/>
+            <Route path="/register" element={<Register/>}/>
+            <Route path="/movies/:id" element={<SingleMovie/>}/>
+            <Route path='/forgot-pass' element={<UserFogotPass/>} />
+            <Route path='/change-pass' element={<UserChangePass/>} />
+            <Route path="/verify-code" element={<Verify/>} /> 
+          </>)
         }
         
         
