@@ -11,13 +11,21 @@ import { toast } from 'react-toastify';
 import { useLocation } from 'react-router-dom';
 import axiosApiInstance from '../../context/intercepter';
 import { useEffect } from 'react';
+import { RiUserStarFill } from 'react-icons/ri';
+import Pagination from '../../components/Pagination';
 
 function AdminMovies() {
   const param = useLocation();
 
   const [load, setLoad] = useState(false);
   const [show, setShow] = useState(false);
+  const [listActorShow, setListActorShow] = useState(false);
   const [film, setFilm] = useState([]);
+  const [genre, setGenre] = useState([]);
+  const [actor, setActor] = useState([]);
+  const [actorFilm, setActorFilm] = useState([]);
+  const [selectedActors, setSelectedActors] = useState([]);
+
   const [photo, setPhoto] = useState();
   const [filePhoto, setFilePhoto] = useState();
   const [video, setVideo] = useState();
@@ -40,7 +48,6 @@ function AdminMovies() {
   const indexOfLastFilms = currentPage * filmsPerPage;
   const indexOfFirstFilms = indexOfLastFilms - filmsPerPage;
   const currentFilm = film.slice(indexOfFirstFilms, indexOfLastFilms);
-  const [block, setBlock] = useState();
 
 
   const paginateFront = () => setCurrentPage(currentPage + 1);
@@ -51,11 +58,77 @@ function AdminMovies() {
       setLoad(true);
       setFilm(result?.data);
   }
+  async function getGenre() {
+    const result = await axiosApiInstance.get(axiosApiInstance.defaults.baseURL + `/genres/getAll`);
+    setLoad(true);
+    setGenre(result?.data);
+  }
+  async function getActor() {
+    const result = await axiosApiInstance.get(axiosApiInstance.defaults.baseURL + `/actors/getAll`);
+    setLoad(true);
+    setActor(result?.data);
+  }
+  async function getActorFilm(id) {
+    const result = await axiosApiInstance.get(axiosApiInstance.defaults.baseURL + `/actors/getFromFilm/${id}`);
+    setLoad(true);
+    setActorFilm(result?.data);
+  }
+
+  const handleCheckboxChange = async (actorId) => {
+    if (selectedActors.includes(actorId)) {
+      try {
+        await axiosApiInstance.delete(`/films/deleteActor/${id}/${actorId}`);
+        setSelectedActors(selectedActors.filter(ident => ident !== actorId));
+        toast.success('Actor removed from film');
+      } catch (error) {
+        toast.error('Error removing actor from film');
+        console.log(error);
+      }
+    } else {
+      try {
+        await axiosApiInstance.post(`/films/addActors/${id}/${actorId}`);
+        setSelectedActors([...selectedActors, actorId]);
+        toast.success('Actor added to film');
+      } catch (error) {
+        toast.error('Error adding actor to film');
+        console.log(error);
+      }
+    }
+  };
+  
+
+  const handleActorShow = async (e) => {
+    setListActorShow(true);
+    const id = e.currentTarget.getAttribute("data-id");
+    setID(id);
+  
+    try {
+      const result = await axiosApiInstance.get(`/actors/getFromFilm/${id}`);
+      setLoad(true);
+      setActorFilm(result?.data);
+  
+      // Extract actor IDs from the fetched data
+      const actorIds = result?.data.map(actor => actor.id);
+      setSelectedActors(actorIds);
+    } catch (error) {
+      console.error('Error fetching actor film data:', error);
+    }
+  };
+
+  const handleActorClose = () =>{
+    setSelectedActors([]);
+    setListActorShow(false);
+    setActorFilm([]);
+    setID(null);
+  }
+
 
   useEffect(() => {
       getFilms();
+      getGenre();
+      getActor();
       film.length%10==0? setLastPage(Math.floor(film.length/10)):setLastPage(Math.floor(film.length/10)+1);
-    }, [param,film.length,photo]);
+    }, [param,film.length,photo,video,currentFilm,selectedActors]);
   const [title, setTitle] = useState("");
   const Head = "text-xs text-center text-main font-semibold px-6 py-2 uppercase";
   const Text = "text-sm text-center leading-6 whitespace-nowrap px-5 py-3";
@@ -63,6 +136,7 @@ function AdminMovies() {
   const handleClose = () => {
     setShow(false);
     setName(null);
+    setID(null);
     setPhoto(null);
     setFilePhoto(null);
     setVideo(null);
@@ -74,17 +148,49 @@ function AdminMovies() {
     setProductionYear(null);
     setStatus(true);
   }
+  
+  
+
+  const handleBlock = async (e) => {
+    try {
+      const id = e.currentTarget.getAttribute("data-id");
+      const response = await axiosApiInstance.put(`/films/edit/status/${id}`);
+  
+      if (response?.status === 200 || response?.status === 201) {
+        toast.success(response?.data.msg);
+        getFilms();
+      } else {
+        toast.error(response?.data?.message + "! Vui lòng thử lại");
+      }
+    } catch (error) {
+      console.error("Lỗi khi gọi API:", error);
+      toast.error("Đã xảy ra lỗi khi gọi API. Vui lòng thử lại sau.");
+    }
+  };
 
   const handleInfo = (e) => {
     const id = e.currentTarget.getAttribute("data-id");
     const name = e.currentTarget.getAttribute("data-name");
+    const decription = e.currentTarget.getAttribute("data-decription");
     const photo = e.currentTarget.getAttribute("data-photo");
-
+    const length = e.currentTarget.getAttribute("data-length");
+    const productionYear = e.currentTarget.getAttribute("data-productionYear");
+    const video = e.currentTarget.getAttribute("data-video");
+    const price = e.currentTarget.getAttribute("data-price");
+    const genreId = e.currentTarget.getAttribute("data-genreID");
+    const status = e.currentTarget.getAttribute("data-status");
     setForm("edit");
     setTitle("Edit Film");
+    setDecription(decription);
     setName(name);
     setID(id);
     setPhoto(photo);
+    setLength(length);
+    setProductionYear(productionYear)
+    setVideo(video);
+    setPrice(price);
+    setGenreID(genreId)
+    setStatus(status);
     setShow(true);
   }
 
@@ -111,7 +217,8 @@ function AdminMovies() {
     setFilePhoto(selectedFile);
   };
 
-  const handlePhotoUpload = async () => {
+  const handlePhotoUpload = async (e) => {
+    e.preventDefault();
     if (!filePhoto) {
       toast.error("Vui lòng chọn tệp ảnh");
       return;
@@ -148,7 +255,8 @@ function AdminMovies() {
     setFileVideo(selectedFile);
   };
 
-  const handleVideoUpload = async () => {
+  const handleVideoUpload = async (e) => {
+    e.preventDefault();
     if (!fileVideo) {
       toast.error("Vui lòng chọn tệp ảnh");
       return;
@@ -159,7 +267,7 @@ function AdminMovies() {
 
     try {
       const response = await axios.post(
-        axios.defaults.baseURL + `/upload/photo`,
+        axios.defaults.baseURL + `/upload/video`,
         formData,
         {
           headers: {
@@ -168,17 +276,60 @@ function AdminMovies() {
         }
       );
       if (response?.data.message === "Upload success") {
-        toast.success("Tải ảnh lên thành công");
-        setPhoto(response.data.picture_url.toString());
+        toast.success("Tải video lên thành công");
+        setVideo(response.data.secure_url.toString());
       } else {
         toast.error("Có lỗi xảy ra. Vui lòng thử lại.");
       }
 
       // Sau khi hoàn thành, bạn có thể làm sạch trạng thái file
     } catch (error) {
-      toast.error("Đã xảy ra lỗi khi tải ảnh lên. Vui lòng thử lại.");
+      toast.error("Đã xảy ra lỗi khi tải video lên. Vui lòng thử lại.");
     }
   };
+
+  const handleSubmit = async (e) => {
+      if (!film_name && !photo && !video && !length && !decription 
+        && !genreID && !price && !productionYear) {
+        toast.error("Error empty entity");
+        return;
+      }
+      console.log(video)
+      e.preventDefault();
+      const payload = {
+        title: film_name,
+        length: parseInt(length),
+        poster: photo.toString(),
+        production_year: parseInt(productionYear),
+        path: video.toString(),
+        description: decription,
+        price: parseInt(price),
+        genre_id: parseInt(genreID),
+        status: JSON.parse(status)
+      }
+      const query = form === "add" ? await axiosApiInstance.post(axiosApiInstance.defaults.baseURL + `/films/create`, payload) :
+          await axiosApiInstance.put(axiosApiInstance.defaults.baseURL + `/films/edit/${id}`, payload);
+          if (query?.status === 200 || query?.status === 201)
+          {
+            toast.success(query?.data.msg);
+            getFilms();
+          } 
+        else
+          toast.error(query?.data?.message + "! Vui lòng thử lại");
+      setChange(!change);
+      setShow(false);
+      setName(null);
+      setPhoto(null);
+      setFilePhoto(null);
+      setVideo(null);
+      setFileVideo(null);
+      setDecription(null);
+      setLength(null);
+      setGenreID(null);
+      setPrice(null);
+      setProductionYear(null);
+      setStatus(true);
+  }
 
   return (
     <AdminLayout>
@@ -217,7 +368,7 @@ function AdminMovies() {
                             Year
                         </th>
                         <th scope='col' className={`${Head}`}>
-                            Monites
+                            Minutes
                         </th>
                         <th scope='col' className={`${Head}`}>
                             Action
@@ -226,7 +377,7 @@ function AdminMovies() {
                 </thead>
                   <tbody className='bg-main divide-y divide-gray-800'>
                       {
-                        film.map((movie,index)=>(
+                        currentFilm.map((movie,index)=>(
                           <tr key={movie.id}>
                               <td className={`${Text} truncate`}>{(currentPage-1)*10+index+1}</td>
                               <td className={`${Text}`}>{movie.title}</td>
@@ -243,11 +394,25 @@ function AdminMovies() {
                               <td className={`${Text}`}>{movie.length}</td>
                   
                               <td className={`${Text} flex-rows gap-2 mt-2`}>
-                                  <button type='button' onClick={handleInfo} className='border border-white bg-yellow-200 flex-rows gap-2 text-main rounded py-1 px-2'>
-                                      <FaEdit/> Edit
+                                  <button type='button' 
+                                    data-id={movie.id}
+                                    data-name={movie.title}
+                                    data-decription={movie.description}
+                                    data-photo={movie.poster.toString()} 
+                                    data-length={movie.length}
+                                    data-productionYear = {movie.production_year}
+                                    data-video = {movie.path.toString()}
+                                    data-price = {movie.price}
+                                    data-genreID = {movie.genre_id}
+                                    data-status = {movie.status}
+                                    onClick={handleInfo} className='border border-white bg-yellow-200 flex-rows gap-2 text-main rounded py-1 px-2'>
+                                      <FaEdit className='w-6 h-6'/>
                                   </button>
-                                  <button type = 'button' className='border border-white bg-subMain flex-rows gap-2 text-white rounded py-1 px-2'>
+                                  <button type='button' data-id={movie.id} onClick={handleBlock} className='border border-white bg-subMain flex-rows gap-2 text-white rounded py-1 px-2'>
                                       {!movie.status?<TbLock className='w-6 h-6'/>:<TbLockOpen className='w-6 h-6'/>}
+                                  </button>
+                                  <button type='button' data-id={movie.id} onClick={handleActorShow} className='border border-white bg-green-400 flex-rows gap-2 text-white rounded py-1 px-2'>
+                                      <RiUserStarFill className='w-6 h-6'/>
                                   </button>
                               </td>
                           </tr>
@@ -298,19 +463,78 @@ function AdminMovies() {
                     <label className="block text-dryGray text-sm font-medium mb-1">
                       Decription
                     </label>
-                    <input 
+                    <textarea
                       required
                       value={decription}
                       onChange={(e) => setDecription(e.target.value)}
-                      className="shadow bg-main appearance-none rounded w-full py-2 px-1 border border-border text-white" />                    
+                      className="resize-none shadow bg-main appearance-none rounded w-full py-2 px-1 border border-border text-white"
+                      rows={2} // Đặt số dòng
+                    />
+                    
                     <label className="block text-dryGray text-sm font-medium mb-1">
                       Length
                     </label>
                     <input 
+                      type='number'
                       required
                       value={length}
                       onChange={(e) => setLength(e.target.value)}
                       className="shadow bg-main appearance-none rounded w-full py-2 px-1 border border-border text-white" />
+                    <label className="block text-dryGray text-sm font-medium mb-1">
+                      Production Year
+                    </label>
+                    <input 
+                      type='number'
+                      required
+                      value={productionYear}
+                      onChange={(e) => setProductionYear(e.target.value)}
+                      className="shadow bg-main appearance-none rounded w-full py-2 px-1 border border-border text-white" />
+                    <label className="block text-dryGray text-sm font-medium mb-1">
+                      Price
+                    </label>
+                    <input 
+                      type='number'
+                      required
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                      className="shadow bg-main appearance-none rounded w-full py-2 px-1 border border-border text-white" />
+                    <label className="block text-dryGray text-sm font-medium mb-1">
+                      Video
+                    </label>
+                    <div>
+                      <input 
+                        type="file"
+                        accept="video/*"
+                        onChange={handleFileVideoChange}
+                        className="shadow bg-main appearance-none rounded w-full py-2 px-1 border border-border text-white" />
+                      {fileVideo?
+                        <button type='button' onClick={handleVideoUpload}>Upload</button>
+                        :<></>
+                      }
+                    </div>
+                    <label className="block text-dryGray text-sm font-medium mb-1">
+                      Genre
+                    </label>
+                    <select 
+                      value={genreID} // Đặt giá trị đã chọn vào state
+                      onChange={(e) => setGenreID(e.target.value)}
+                      className="shadow bg-main appearance-none rounded w-full py-2 px-1 border border-border text-white">
+                      {
+                        genre.map((g)=>(
+                          <option key={g.id} value={g.id}>{g.name}</option>
+                        ))
+                      }
+                    </select>
+                    <label className="block text-dryGray text-sm font-medium mb-1">
+                      Status
+                    </label>
+                    <select 
+                      value={status} // Đặt giá trị đã chọn vào state
+                      onChange={(e) => setStatus(e.target.value)}
+                      className="shadow bg-main appearance-none rounded w-full py-2 px-1 border border-border text-white">
+                      <option value={true}>Active</option>
+                      <option value={false}>Inactive</option>
+                    </select>
                   </form>
                 </div>
                 <div className="flex items-center justify-end p-6 rounded-b">
@@ -324,7 +548,7 @@ function AdminMovies() {
                   <button
                     className="text-white bg-green-500 active:bg-yellow-700 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1"
                     type="button"
-                    onClick={handleClose}
+                    onClick={handleSubmit}
                   >
                     Submit
                   </button>
@@ -334,7 +558,68 @@ function AdminMovies() {
           </div>
         </>
       ) : null}
+        {listActorShow ? (
+        <>
+          <div className="flex justify-center items-center overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none">
+            <div className="relative w-auto my-6 mx-auto max-w-3xl">
+              <div className="border border-white rounded-lg shadow-lg relative flex flex-col w-full bg-dry outline-none focus:outline-none">
+                <div className="flex items-start justify-between p-5 rounded-t ">
+                  <h3 className="text-3xl font=semibold">Actor List</h3>
+                  <button
+                    className="bg-transparent border-0 text-black float-right"
+                    onClick={handleActorClose}
+                  >
+                    <GiCancel className="text-white h-6 w-6 text-xl blockpy-0"/>
+                  </button>
+                </div>
+                <div className="relative p-6 flex-auto">
+                
+                <form className="shadow-md rounded px-8 pt-6 pb-8 w-full">
+                  {actor.map(actorItem => (
+                    <div key={actorItem.id} className="mb-[0.125rem] block min-h-[1.5rem] pl-[1.5rem]">
+                      <input
+                        type="checkbox"
+                        className="your-checkbox-styles"
+                        checked={selectedActors.includes(actorItem.id)}
+                        onChange={() => handleCheckboxChange(actorItem.id)}
+                      />
+                      <label className="inline-block pl-[0.15rem] hover:cursor-pointer">
+                        {actorItem.name}
+                        <img
+                          className='h-12 w-12 object-cover'
+                          src={`${actorItem.photo}`}
+                          alt={actorItem.name}
+                        />
+                      </label>
+                    </div>
+                  ))}
+                </form>
 
+                </div>
+                <div className="flex items-center justify-end p-6 rounded-b">
+                  <button
+                    className="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1"
+                    type="button"
+                    onClick={handleActorClose}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      ) : null}
+        <div className="flex flex-row-reverse mx-5">
+            <Pagination
+                itemsPerPage={filmsPerPage}
+                totalItems={film.length}
+                paginateFront={paginateFront}
+                paginateBack={paginateBack}
+                currentPage={currentPage}
+                lastPage={lastPage}
+                />
+        </div> 
         </>
     </AdminLayout>
   )

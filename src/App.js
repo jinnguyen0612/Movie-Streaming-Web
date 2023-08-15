@@ -33,7 +33,8 @@ import jwtDecode from 'jwt-decode';
 function App() {
   Aos.init();
   const tokens = JSON.parse(localStorage.getItem('tokens'));
-    const permission = tokens ? jwtDecode(tokens.access_token).role : '';
+  const permission = tokens ? jwtDecode(tokens.access_token).role : '';
+  
   return (
     <AuthContextProvider>
       <Routes>

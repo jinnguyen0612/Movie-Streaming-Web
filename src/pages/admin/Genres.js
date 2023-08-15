@@ -78,10 +78,9 @@ function Genres() {
       }
       const query = form === "add" ? await axiosApiInstance.post(axiosApiInstance.defaults.baseURL + `/genres/create`, payload) :
           await axiosApiInstance.put(axiosApiInstance.defaults.baseURL + `/genres/edit/${id}`, payload);
-      if (query?.status === 200)
+      if (query?.status === 200 || query?.status === 201)
           {
-            toast.success(query?.data.message);
-            console.log(query);
+            toast.success(query?.data.msg);
           }
       else
           toast.error(query?.data?.message + "! Vui lòng thử lại");

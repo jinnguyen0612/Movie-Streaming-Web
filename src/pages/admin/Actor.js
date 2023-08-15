@@ -8,6 +8,7 @@ import { useLocation } from 'react-router-dom';
 import axiosApiInstance from '../../context/intercepter';
 import { toast } from 'react-toastify';
 import axios from './../../api/axios';
+import Pagination from '../../components/Pagination';
 
 function Actor() {
   const param = useLocation();
@@ -41,7 +42,7 @@ function Actor() {
   useEffect(() => {
       getActors();
       actor.length%10==0? setLastPage(Math.floor(actor.length/10)):setLastPage(Math.floor(actor.length/10)+1);
-    }, [param,actor.length,photo]);
+    }, [param,actor.length,photo,currentActors]);
     
     
     const [title, setTitle] = useState("");
@@ -128,9 +129,9 @@ function Actor() {
       }
       const query = form === "add" ? await axiosApiInstance.post(axiosApiInstance.defaults.baseURL + `/actors/create`, payload) :
           await axiosApiInstance.put(axiosApiInstance.defaults.baseURL + `/actors/edit/${id}`, payload);
-          if (query?.status === 200)
+          if (query?.status === 200 || query?.status ===201)
           {
-            toast.success(query?.data.message);
+            toast.success(query?.data.msg);
             getActors();
           }
       else
@@ -180,7 +181,7 @@ function Actor() {
                 </thead>
                   <tbody className='bg-main divide-y divide-gray-800'>
                       {
-                        actor.map((actor,index)=>(
+                        currentActors.map((actor,index)=>(
                           <tr key={actor.id}>
                               <td className={`${Text} truncate`}>{(currentPage-1)*10+index+1}</td>
                               <td className={`${Text}`}>{actor.name}</td>
@@ -274,7 +275,16 @@ function Actor() {
           </div>
         </>
       ) : null}
-
+        <div className="flex flex-row-reverse mx-5">
+            <Pagination
+                itemsPerPage={actorsPerPage}
+                totalItems={actor.length}
+                paginateFront={paginateFront}
+                paginateBack={paginateBack}
+                currentPage={currentPage}
+                lastPage={lastPage}
+                />
+        </div> 
         </>
     </AdminLayout>
   )
