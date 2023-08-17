@@ -1,13 +1,19 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Titles from './Title'
 import { BsBookmarkStarFill } from 'react-icons/bs';
 import { Select } from '../../pages/customer/UsedInput';
 import Rating from './Star';
+import { toast } from 'react-toastify';
+import axiosApiInstance from '../../context/intercepter';
+import { Link, useLocation } from 'react-router-dom';
 
-function MovieRating({movie}) {
+function MovieRating({movie,setLoadRate,user}) {
+    const param = useLocation();
+    const [load, setLoad] = useState(false);
+
     const Ratings=[
         {
-            title:"0 - Poor",
+            title:"Vote for Film",
             value:0,
         },
         {
@@ -33,6 +39,59 @@ function MovieRating({movie}) {
     ]
 
     const [rating,setRating] = useState(0);
+    const [checkVote,setCheckVote] = useState();
+
+    const handleVote = async () => {
+        if(user){
+          if (rating === 0) {
+            toast.error("Please vote before submitting");
+            return;
+          }
+        
+          const payload = {
+            vote: parseInt(rating),
+          };
+        
+          const filmId = movie.id; // Assuming you have the movie ID available
+        
+          if (checkVote) {
+            try {
+              await axiosApiInstance.put(
+                `${axiosApiInstance.defaults.baseURL}/films/editVote/${filmId}?vote=${payload.vote}`
+              );
+              toast.success("Edit Vote");
+            } catch (error) {
+              toast.error("Error editing vote");
+              console.log(error);
+            }
+          } else {
+            try {
+              await axiosApiInstance.post(
+                `${axiosApiInstance.defaults.baseURL}/films/addVote/${filmId}?vote=${payload.vote}`
+              );
+              setCheckVote(true);
+              toast.success("Create Vote");
+            } catch (error) {
+              toast.error("Error creating vote");
+              console.log(error);
+            }
+          }
+          setLoadRate(false);
+        }
+      };
+      
+
+      async function getCheckVote() {
+        const result = await axiosApiInstance.get(axiosApiInstance.defaults.baseURL + `/films/checkVote/${movie.id}`);
+        setLoad(true);
+        setCheckVote(result?.data.value);
+    } 
+     
+      useEffect(() => {
+        if(user) getCheckVote();
+
+      }, [param,load]);
+
   return (
     <div className='my-12'>
         <Titles title="Reviews" Icon={BsBookmarkStarFill}/>
@@ -40,7 +99,7 @@ function MovieRating({movie}) {
             {/*Rate*/}
             <div className='xl:col-span-2 w-full flex flex-col gap-8'>
                 <h3 className='text-xl text-text font-semibold'>
-                    Rating for "{movie?.name}"
+                    Rating for "{movie?.title}"
                 </h3>
                 <p className='text-sm leading-7 font-medium text-border'>
                     Your rating will help us rate the movie on this page.
@@ -51,7 +110,13 @@ function MovieRating({movie}) {
                         <Rating value={rating}/>
                     </div>
                 </div>
-                <button className='bg-subMain text-white py-3 w-full flex-colo rounded'>Submit</button>
+                {
+                  user?
+                  <button onClick={(e)=>handleVote()} className='bg-subMain text-white py-3 w-full flex-colo rounded'>Submit</button>
+                  :
+                  <Link to="/login" className='bg-subMain text-white py-3 w-full flex-colo rounded'>Submit</Link>
+
+                }
             </div>
         </div>
     </div>

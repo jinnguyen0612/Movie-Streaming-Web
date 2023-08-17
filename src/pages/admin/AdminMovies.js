@@ -18,6 +18,9 @@ function AdminMovies() {
   const param = useLocation();
 
   const [load, setLoad] = useState(false);
+  const [loadGenre, setLoadGenre] = useState(false);
+  const [loadActor, setLoadActor] = useState(false);
+  const [loadActorFilm, setLoadActorFilm] = useState(false);
   const [show, setShow] = useState(false);
   const [listActorShow, setListActorShow] = useState(false);
   const [film, setFilm] = useState([]);
@@ -60,12 +63,12 @@ function AdminMovies() {
   }
   async function getGenre() {
     const result = await axiosApiInstance.get(axiosApiInstance.defaults.baseURL + `/genres/getAll`);
-    setLoad(true);
+    setLoadGenre(true);
     setGenre(result?.data);
   }
   async function getActor() {
     const result = await axiosApiInstance.get(axiosApiInstance.defaults.baseURL + `/actors/getAll`);
-    setLoad(true);
+    setLoadActor(true);
     setActor(result?.data);
   }
   async function getActorFilm(id) {
@@ -104,7 +107,7 @@ function AdminMovies() {
   
     try {
       const result = await axiosApiInstance.get(`/actors/getFromFilm/${id}`);
-      setLoad(true);
+      setLoadActorFilm(true);
       setActorFilm(result?.data);
   
       // Extract actor IDs from the fetched data
@@ -125,10 +128,22 @@ function AdminMovies() {
 
   useEffect(() => {
       getFilms();
-      getGenre();
-      getActor();
       film.length%10==0? setLastPage(Math.floor(film.length/10)):setLastPage(Math.floor(film.length/10)+1);
-    }, [param,film.length,photo,video,currentFilm,selectedActors]);
+    }, [param,load]);
+
+  useEffect(() => {
+    if(id) getActorFilm(id);
+    }, [param,loadActorFilm]);
+
+    useEffect(() => {
+      getGenre();
+    }, [param,loadGenre]);
+
+    useEffect(() => {
+      getActor();
+    }, [param,loadActor]);
+
+
   const [title, setTitle] = useState("");
   const Head = "text-xs text-center text-main font-semibold px-6 py-2 uppercase";
   const Text = "text-sm text-center leading-6 whitespace-nowrap px-5 py-3";
@@ -160,11 +175,11 @@ function AdminMovies() {
         toast.success(response?.data.msg);
         getFilms();
       } else {
-        toast.error(response?.data?.message + "! Vui lòng thử lại");
+        toast.error(response?.data?.message + "! Try again");
       }
     } catch (error) {
       console.error("Lỗi khi gọi API:", error);
-      toast.error("Đã xảy ra lỗi khi gọi API. Vui lòng thử lại sau.");
+      toast.error("Error when call API. Please try again.");
     }
   };
 

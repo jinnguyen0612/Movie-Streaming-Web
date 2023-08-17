@@ -26,6 +26,7 @@ import Payment from "./pages/admin/Payment";
 import AdminProfile from "./pages/admin/AdminProfile";
 import { AuthContextProvider } from "./context/AuthProvider";
 import jwtDecode from 'jwt-decode';
+import Package from "./pages/customer/Package";
 
 
 
@@ -57,6 +58,7 @@ function App() {
             <Route path="/favorite" element={<Favorite/>}/>
             <Route path="/watch/:id" element={<WatchPage/>}/>
             <Route path="/" element={<Home/>}/>
+            <Route path="/package" element={<Package/>}/>
             <Route path="/about" element={<About/>}/>
             <Route path="/contact" element={<Contact/>}/>
             <Route path="/movies" element={<MoviesPage/>}/>

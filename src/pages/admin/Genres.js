@@ -40,7 +40,7 @@ function Genres() {
   useEffect(() => {
       getGenre();
       genres.length%10==0? setLastPage(Math.floor(genres.length/10)):setLastPage(Math.floor(genres.length/10)+1);
-    }, [param,genres.length,currentGenres]);
+    }, [param,load]);
     
     
     
@@ -55,9 +55,9 @@ function Genres() {
     const handleInfo = (e) => {
       setForm("edit");
       setTitle("Edit Genre");
-    setName(e.currentTarget.title);
-    setID(e.currentTarget.id);
-    setShow(true);
+      setName(e.currentTarget.title);
+      setID(e.currentTarget.id);
+      setShow(true);
   }
   const handleShowAdd = (e) => {
       setName(null);
@@ -86,7 +86,7 @@ function Genres() {
           toast.error(query?.data?.message + "! Vui lòng thử lại");
         
       getGenre();
-      
+      setLoad(false);
       setChange(!change);
       setShow(false);
       setName(null);

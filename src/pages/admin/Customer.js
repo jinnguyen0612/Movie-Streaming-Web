@@ -35,7 +35,7 @@ function Customer() {
     useEffect(() => {
         getCustomer();
         customers.length%10==0? setLastPage(Math.floor(customers.length/10)):setLastPage(Math.floor(customers.length/10)+1);
-    }, [param,customers.length]);
+    }, [param,load]);
 
     const Head = "text-xs text-center text-main font-semibold px-6 py-2 uppercase";
     const Text = "text-sm text-center leading-6 whitespace-nowrap px-5 py-3";

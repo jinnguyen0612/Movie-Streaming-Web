@@ -6,7 +6,7 @@ import Rating from './Star';
 import { toast } from 'react-toastify';
 import axiosApiInstance from '../../context/intercepter';
 
-function MovieInfo({movie , checkFavorite, setCheckFavorite,user}) {
+function MovieInfo({movie , checkFavorite, setCheckFavorite,user,rate,setLoadFavorite}) {
     
 
     const handleFavorite = async (id) => {
@@ -29,6 +29,7 @@ function MovieInfo({movie , checkFavorite, setCheckFavorite,user}) {
             console.log(error);
           }
         }
+        setLoadFavorite(false);
       };
 
   return (
@@ -53,7 +54,7 @@ function MovieInfo({movie , checkFavorite, setCheckFavorite,user}) {
                         </h1>
                         {/*Rating*/}
                         <div className='flex items-center gap-4 font-medium text-star'>
-                            <Rating value={5}/>
+                            <Rating value={rate}/>
                         </div>
                         {/*Flex items*/}
                         <div className='flex items-center gap-4 font-medium text-dryGray'>
@@ -71,10 +72,10 @@ function MovieInfo({movie , checkFavorite, setCheckFavorite,user}) {
                             {/*Favorite*/}
                             <div className='col-span-1 flex-colo'>
                                 {user?
-                                    <button onClick={(e)=>handleFavorite(movie?.id)} className={`w-10 h-10 flex-colo rounded-lg bg-white bg-opacity-20 hover:text-subMain`}>
+                                    <button onClick={(e)=>handleFavorite(movie?.id)} className={`w-10 h-10 flex-colo rounded-lg bg-white ${checkFavorite ? "text-subMain hover:text-white":"hover:text-subMain text-white"} bg-opacity-20`}>
                                         <FaHeart/>
                                     </button>:
-                                    <Link to={`/login`} className={`w-10 h-10 flex-colo rounded-lg bg-white bg-opacity-20 hover:text-subMain`}>
+                                    <Link to={`/login`} className={`w-10 h-10 flex-colo rounded-lg bg-opacity-20 bg-white hover:text-subMain`}>
                                         <FaHeart/>
                                     </Link>
                                 }

@@ -42,7 +42,7 @@ function Actor() {
   useEffect(() => {
       getActors();
       actor.length%10==0? setLastPage(Math.floor(actor.length/10)):setLastPage(Math.floor(actor.length/10)+1);
-    }, [param,actor.length,photo,currentActors]);
+    }, [param,load]);
     
     
     const [title, setTitle] = useState("");
@@ -136,6 +136,7 @@ function Actor() {
           }
       else
           toast.error(query?.data?.message + "! Vui lòng thử lại");
+      setLoad(false);
       setChange(!change);
       setShow(false);
       setName(null);

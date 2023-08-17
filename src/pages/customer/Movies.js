@@ -13,6 +13,9 @@ import axiosApiInstance from '../../context/intercepter';
 
 function MoviesPage() {
   const param = useLocation();
+  const [load,setLoad] = useState(false);
+  const [loadFavorite,setLoadFavorite] = useState(false);
+
   const {user}= useContext(AuthContext);
   const [favoriteFilm, setFavoriteFilm] = useState([]);
   const [activeFilm, setActiveFilm] = useState([]);
@@ -25,11 +28,13 @@ function MoviesPage() {
     } catch (error) {
       setFavoriteFilm([]);
     }
+    setLoadFavorite(true);
   }
 
   async function getActiveFilm() {
     const result = await axios.get(axios.defaults.baseURL + `/films/getActive`);
     setActiveFilm(result?.data);
+    setLoad(true);
   }
 
   const maxpage=10;
@@ -40,10 +45,12 @@ function MoviesPage() {
 
   useEffect(() => {
     getActiveFilm();
+  }, [param,load]);
+  useEffect(() => {
     if (user != null) {
       getFavoriteId();
     }
-  }, [param,favoriteFilm]);
+  }, [param,loadFavorite]);
 
   return (
     <Layout>

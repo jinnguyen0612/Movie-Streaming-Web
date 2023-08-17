@@ -11,6 +11,7 @@ import { useEffect } from 'react';
 function Favorite() {
   const Head = "text-xs text-center text-main font-semibold px-6 py-2 uppercase";
   const Text = "text-sm text-center leading-6 whitespace-nowrap px-5 py-3";
+  const [load,setLoad] = useState(false);
   const param = useLocation();
   const [listFavoriteFim, setListFavoriteFilm] = useState([]);
   
@@ -22,6 +23,7 @@ function Favorite() {
       setListFavoriteFilm([]);
       console.error('Error fetching favorite films:', error);
     }
+    setLoad(true);
   }
 
   const handleRemoveAll = async () => {
@@ -33,6 +35,7 @@ function Favorite() {
       toast.error('Error removing film from favorite');
       console.log(error);
     }
+    setLoad(false);
   };
 
   const handleRemove = async (id) => {
@@ -44,11 +47,12 @@ function Favorite() {
     toast.error('Error removing film from favorite');
     console.log(error);
     }
+    setLoad(false);
   };
 
   useEffect(() => {
     getFavorite();
-  }, [param,listFavoriteFim]);
+  }, [param,load]);
 
   return (
     <SideBar>

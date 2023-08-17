@@ -9,11 +9,19 @@ axiosApiInstance.interceptors.request.use((config) => {
     toast.info("Vui lòng đăng nhập để tiếp tục!", { autoClose: 3000 });
     window.location.href = "/login";
   } else {
-    config.headers = {
-      'Authorization': `${tokensData.token_type} ${tokensData.access_token}`,
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    };
+    const dateToCompare = new Date(tokensData.expiresIn); // Ngày cần so sánh
+    const today = new Date()
+    today.setUTCHours(0, 0, 0, 0);
+    if(today>=dateToCompare){
+      toast.info("Vui lòng đăng nhập để tiếp tục!", { autoClose: 3000 });
+      window.location.href = "/login";
+    }else{
+      config.headers = {
+        'Authorization': `${tokensData.token_type} ${tokensData.access_token}`,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      };
+    }
   }
   return config;
 });

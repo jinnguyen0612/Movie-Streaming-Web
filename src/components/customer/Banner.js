@@ -15,15 +15,19 @@ import { toast } from 'react-toastify';
 
 function Banner() {
   const param = useLocation();
+  const [load,setLoad] = useState(false);
+  const [loadFavorite,setLoadFavorite] = useState(true);
   const {user}= useContext(AuthContext);
   const [filmBanner, setFilmBanner] = useState([]);
   const [favoriteFilm, setFavoriteFilm] = useState([]);
   useEffect(() => {
     getBannerFilm();
+  }, [param,load]);
+  useEffect(() => {
     if (user != null) {
       getFavoriteId();
     }
-  }, [param,favoriteFilm]);
+  }, [param,loadFavorite]);
 
   const handleFavorite = async (id) => {
     if (favoriteFilm.includes(id)) {
@@ -45,6 +49,7 @@ function Banner() {
         console.log(error);
       }
     }
+    setLoadFavorite(false);
   };
 
   async function getFavoriteId(){
@@ -55,6 +60,7 @@ function Banner() {
     } catch (error) {
       console.error('Error fetching favorite films:', error);
     }
+    setLoadFavorite(true);
   }
 
   function isFilmFavorite(filmId) {
@@ -64,6 +70,7 @@ function Banner() {
   async function getBannerFilm() {
     const result = await axios.get(axios.defaults.baseURL + `/films/getLatestActive`);
     setFilmBanner(result?.data);
+    setLoad(true);
   }
 
   return (

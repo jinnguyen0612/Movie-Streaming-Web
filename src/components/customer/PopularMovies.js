@@ -12,6 +12,8 @@ import { useState } from 'react';
 
 function PopularMovies() {
   const param = useLocation();
+  const [load, setLoad] = useState(false);
+  const [loadFavorite, setLoadFavorite] = useState(false);
   const {user}= useContext(AuthContext);
   const [filmPopular, setFilmPopular] = useState([]);
   const [favoriteFilm, setFavoriteFilm] = useState([]);
@@ -24,19 +26,23 @@ function PopularMovies() {
     } catch (error) {
       console.error('Error fetching favorite films:', error);
     }
+    setLoadFavorite(true);
   }
 
   async function getPopularFilm() {
     const result = await axios.get(axios.defaults.baseURL + `/films/topFavoriteFilms`);
     setFilmPopular(result?.data);
+    setLoad(true);
   }
 
   useEffect(() => {
     getPopularFilm();
+  }, [param,load]);
+  useEffect(() => {
     if (user != null) {
       getFavoriteId();
     }
-  }, [param,favoriteFilm,filmPopular]);
+  }, [param,loadFavorite]);
   return (
     <div className='my-16'>
       <Title title="Popular Movies" Icon={BsCollectionFill}/>

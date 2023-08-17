@@ -41,7 +41,7 @@ function Pricing() {
     useEffect(() => {
         getPricing();
         pricing.length%10==0? setLastPage(Math.floor(pricing.length/10)):setLastPage(Math.floor(pricing.length/10)+1);
-      }, [param,pricing.length,currentPricing]);
+      }, [param,load]);
       
       
       
@@ -95,8 +95,8 @@ function Pricing() {
             toast.error(response?.data?.message + "! Vui lòng thử lại");
           }
         } catch (error) {
-          console.error("Lỗi khi gọi API:", error);
-          toast.error("Đã xảy ra lỗi khi gọi API. Vui lòng thử lại sau.");
+          console.error("Error when call API:", error);
+          toast.error("Error when call API. Please try again");
         }
       };
   
@@ -127,6 +127,7 @@ function Pricing() {
         setChange(!change);
         setShow(false);
         setName(null);
+        setLoad(false);
     }
 
 
@@ -185,11 +186,11 @@ function Pricing() {
                                         data-days={p.days} 
                                         data-status={p.status}
                                         onClick={handleInfo} className='border border-white bg-yellow-200 flex-rows gap-2 text-main rounded py-1 px-2'>
-                                      <FaEdit className='w-6 h-6'/>
-                                  </button>
-                                  <button type='button' data-id={p.id} onClick={handleBlock} className='border border-white bg-subMain flex-rows gap-2 text-white rounded py-1 px-2'>
-                                      {!p.status?<TbLock className='w-6 h-6'/>:<TbLockOpen className='w-6 h-6'/>}
-                                  </button>
+                                        <FaEdit className='w-6 h-6'/>
+                                    </button>
+                                    <button type='button' data-id={p.id} onClick={handleBlock} className='border border-white bg-subMain flex-rows gap-2 text-white rounded py-1 px-2'>
+                                        {!p.status?<TbLock className='w-6 h-6'/>:<TbLockOpen className='w-6 h-6'/>}
+                                    </button>
                                     </td>
                                 </tr>
                             ))

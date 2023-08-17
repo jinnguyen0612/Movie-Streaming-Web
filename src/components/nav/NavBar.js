@@ -2,6 +2,7 @@ import React from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { FaSearch,FaHeart,FaAngleDown } from 'react-icons/fa'
 import {CgUser} from 'react-icons/cg'
+import {GiWallet} from 'react-icons/gi'
 import { useContext } from 'react'
 import AuthContext from '../../context/AuthProvider'
 
@@ -49,6 +50,9 @@ function NavBar() {
                 <div className='w-5 h-5 flex-colo rounded-full text-xs bg-subMain text-white absolute -top-2 -right-3'>
                   5
                 </div>
+              </NavLink>
+              <NavLink to="/package" className={`${Hover} relative`}>
+                <GiWallet className='w-6 h-6 hover:text-subMain'/>
               </NavLink>
               {
                 (JSON.parse(localStorage.getItem('tokens'))) ?
