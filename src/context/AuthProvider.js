@@ -33,6 +33,7 @@ export const AuthContextProvider = ({ children }) => {
   const logout = async () => {
     setUser(null);
     localStorage.removeItem("tokens");
+    localStorage.removeItem("payment");
     navigate("/login");
   };
 

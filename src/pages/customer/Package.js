@@ -13,25 +13,37 @@ import axiosApiInstance from '../../context/intercepter';
 
 function Package() {
     const param = useLocation();
+    const userPayment = JSON.parse(localStorage.getItem('payment'));
     const [load,setLoad] = useState(false);
     const [pricing, setPricing] = useState([]);
     const {user}= useContext(AuthContext);
 
 
     const handleBtn = async (e) => {
-        try {
-            const id = e.currentTarget.getAttribute("data-id");
-            const response = await axiosApiInstance.post(`/payment/forPackage/${id}`);
-        
-            if (response?.status === 200 || response?.status === 201) {
-              toast.success(response?.data.msg);
-            } else {
-              toast.error(response?.data?.message + "Please try again");
+        if (userPayment){
+            const endDate = new Date(userPayment.end_date); // Ngày cần so sánh
+            const today = new Date();
+            today.setUTCHours(0, 0, 0, 0)
+            if(userPayment.pricing_name != null && endDate>today)
+            {
+                toast.warn("Already register")
             }
-          } catch (error) {
-            console.error("Lỗi khi gọi API:", error);
-            toast.error("Please try again");
-          }        
+        } else {
+            try {
+                const id = e.currentTarget.getAttribute("data-id");
+                const response = await axiosApiInstance.post(`/payment/forPackage/${id}`);
+            
+                if (response?.status === 200 || response?.status === 201) {
+                  toast.success(response?.data.msg);
+                  window.location.href = "/";
+                } else {
+                  toast.error(response?.data?.message + "Please try again");
+                }
+              } catch (error) {
+                console.error("Lỗi khi gọi API:", error);
+                toast.error("Please try again");
+              }        
+        }
     }
 
     const handleLogin = async (e) =>{

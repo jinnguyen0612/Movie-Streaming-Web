@@ -6,8 +6,24 @@ import Rating from './Star';
 import { toast } from 'react-toastify';
 import axiosApiInstance from '../../context/intercepter';
 
-function MovieInfo({movie , checkFavorite, setCheckFavorite,user,rate,setLoadFavorite}) {
-    
+function MovieInfo({movie,checkFavorite,setCheckFavorite,user,rate,setLoadFavorite,setShow}) {
+    const userPayment = JSON.parse(localStorage.getItem('payment'));
+
+    function checkPayment(){
+        if (userPayment){
+            const endDate = new Date(userPayment.end_date); // Ngày cần so sánh
+            const today = new Date();
+            today.setUTCHours(0, 0, 0, 0)
+            if((userPayment.pricing_name != null || userPayment.film_name==movie.title)&& endDate>today)
+            {
+                console.log(false);
+                return false;
+            }
+        }
+        console.log(true);
+        return true;
+    }
+
 
     const handleFavorite = async (id) => {
         if (checkFavorite) {
@@ -96,9 +112,15 @@ function MovieInfo({movie , checkFavorite, setCheckFavorite,user,rate,setLoadFav
                             {/*Watch button*/}
                             <div className='sm:hidden md:block col-span-4 flex justify-end font-medium text-sm'>
                                 {user?
-                                    <Link to={`/watch/${movie?.title}`} className='bg-subMain py-4 hover:bg-dry transitions border-2 border-subMain rounded-full flex-rows gap-4 w-full sm:py-3'>
+                                    checkPayment()?
+                                    <button onClick={(e)=>setShow(true)} className='bg-subMain py-4 hover:bg-dry transitions border-2 border-subMain rounded-full flex-rows gap-4 w-full sm:py-3'>
                                         <FaPlay className='h-3 w-3'/> Watch
-                                    </Link>:
+                                    </button>
+                                        :
+                                        <Link to={`/watch/${movie?.title}`} className='bg-subMain py-4 hover:bg-dry transitions border-2 border-subMain rounded-full flex-rows gap-4 w-full sm:py-3'>
+                                            <FaPlay className='h-3 w-3'/> Watch
+                                        </Link>
+                                    :
                                     <Link to={`/login`} className='bg-subMain py-4 hover:bg-dry transitions border-2 border-subMain rounded-full flex-rows gap-4 w-full sm:py-3'>
                                         <FaPlay className='h-3 w-3'/> Watch
                                     </Link>
@@ -117,12 +139,20 @@ function MovieInfo({movie , checkFavorite, setCheckFavorite,user,rate,setLoadFav
                     {/*Play button*/}
                     <div className='col-span-2 md:mt-0 mt-2 flex justify-end'>
                         {user?
-                            <Link to={`/watch/${movie?.title}`} className='md:w-1/4 w-full relative flex-colo bg-subMain hover:bg-transparent border-2 border-subMain transitions md:h-64 h-20 rounded font-medium'>
-                                <div className='flex-rows gap-6 text-md uppercase tracking-widest absolute md:rotate-90'>
-                                    Watch <FaPlay className='w-6 h-6'/>
-                                </div>
-                            </Link>:
-                            <Link to={`/login`} className='md:w-1/4 w-full relative flex-colo bg-subMain hover:bg-transparent border-2 border-subMain transitions md:h-64 h-20 rounded font-medium'>
+                            checkPayment()?
+                                <button onClick={(e)=>setShow(true)} className='md:w-1/4 w-full relative flex-colo bg-subMain hover:bg-transparent border-2 border-subMain transitions md:h-64 h-20 rounded font-medium'>
+                                    <div className='flex-rows gap-6 text-md uppercase tracking-widest absolute md:rotate-90'>
+                                        Watch <FaPlay className='w-6 h-6'/>
+                                    </div>
+                                </button>
+                                :
+                                <Link to={`/watch/${movie?.title}`} className='md:w-1/4 w-full relative flex-colo bg-subMain hover:bg-transparent border-2 border-subMain transitions md:h-64 h-20 rounded font-medium'>
+                                    <div className='flex-rows gap-6 text-md uppercase tracking-widest absolute md:rotate-90'>
+                                        Watch <FaPlay className='w-6 h-6'/>
+                                    </div>
+                                </Link>
+                            
+                            :<Link to={`/login`} className='md:w-1/4 w-full relative flex-colo bg-subMain hover:bg-transparent border-2 border-subMain transitions md:h-64 h-20 rounded font-medium'>
                                 <div className='flex-rows gap-6 text-md uppercase tracking-widest absolute md:rotate-90'>
                                     Watch <FaPlay className='w-6 h-6'/>
                                 </div>
