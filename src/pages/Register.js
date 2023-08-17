@@ -3,14 +3,25 @@ import Layout from '../layout/Layout'
 import { FiLogIn } from 'react-icons/fi'
 import { Link } from 'react-router-dom'
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { useContext } from 'react';
+import AuthContext from '../context/AuthProvider';
+import axios from '../api/axios';
+import { toast } from 'react-toastify';
 
 function Register() {
-  const name = useRef("");
-  const email = useRef("");
-  const password = useRef("");
-  const configPassword = useRef("");
+  const [name,setName] = useState('');
+  const [email,setEmail] = useState('');
+  const [password,setPassword] = useState('');
+  const [configPassword,setConFigPassword] = useState('');
   const [pwdShown, setPwdShown] = useState(false);
   const [configPwdShown, setConfigPwdShown] = useState(false);
+  const [emailMsgOut, setEmailMsgOut] = useState("");
+  const [passMsgOut, setPassMsgOut] = useState("");
+  const [configPassMsgOut, setConfigPassMsgOut] = useState("");
+  const [nameMsgOut, setNameMsgOut] = useState("");
+  const [registerMsgOut, setRegisterMsgOut] = useState("");
+  const {login}= useContext(AuthContext)
+
 
   const togglePassword = () => {
     setPwdShown(!pwdShown);
@@ -18,6 +29,36 @@ function Register() {
   const toggleConfigPassword = () => {
     setConfigPwdShown(!configPwdShown);
   };
+
+
+
+  const handleClick = async (e)=> {
+    e.preventDefault()
+    email==''?setEmailMsgOut("(PLEASE INPUT YOUR EMAIL)"):setEmailMsgOut('');
+    name==''?setNameMsgOut("(PLEASE INPUT YOUR NAME)"):setNameMsgOut('');
+    password==''?setPassMsgOut("(PLEASE INPUT YOUR PASSWORD)"):setPassMsgOut('');
+    password!=configPassword?setConfigPassMsgOut("(PASSWORD AND CONFIG PASSWORD NOT THE SAME)"):setConfigPassMsgOut('');
+    const formData = new URLSearchParams();
+    formData.append('username', email);
+    formData.append('password', password);
+    try{
+      const payload = {
+        name: name,
+        email: email,
+        password: password
+      }
+      const query = await axios.post(axios.defaults.baseURL + `/register`,payload)
+      if (query?.status === 200 || query?.status === 201)
+        {
+          toast.success(query?.data.msg);
+          await login(formData);
+          console.log(query);
+        }
+    }catch(error){
+      setRegisterMsgOut("EMAIL IS REGISTER")
+    }
+
+  }
 
   return (
     <Layout>
@@ -29,10 +70,11 @@ function Register() {
             className='w-full h-12 object-contain'/>
 
           <div className="text-sm w-full">
-            <label className="text-border font-semibold">Full Name</label>
+            <label className="text-border font-semibold">Full Name {' '} <span className='text-subMain'>{nameMsgOut}</span></label>
             <input
                 required
-                ref={name}
+                value={name}
+                onChange={(e)=>setName(e.target.value)}
                 type="text"
                 placeholder="Your full name"
                 className='w-full text-sm p-4 mt-2 border border-border rounded text-white bg-dry'
@@ -40,10 +82,11 @@ function Register() {
           </div>
 
           <div className="text-sm w-full">
-            <label className="text-border font-semibold">Email</label>
+            <label className="text-border font-semibold">Email {' '} <span className='text-subMain'>{emailMsgOut}</span></label>
             <input
                 required
-                ref={email}
+                value={email}
+                onChange={(e)=>setEmail(e.target.value)}
                 type="email"
                 placeholder="NetMovie@gmail.com"
                 className='w-full text-sm p-4 mt-2 border border-border rounded text-white bg-dry'
@@ -51,10 +94,11 @@ function Register() {
           </div>
 
           <div className="text-sm w-full relative">
-            <label className="text-border font-semibold">Password</label>
+            <label className="text-border font-semibold">Password {' '} <span className='text-subMain'>{passMsgOut}</span></label>
             <input
                 required
-                ref={password}
+                value={password}
+                onChange={(e)=>setPassword(e.target.value)}
                 type={pwdShown ? "text" : "password"}
                 placeholder="********"
                 className='w-full text-sm p-4 mt-2 border border-border rounded text-white bg-dry'
@@ -70,10 +114,11 @@ function Register() {
           </div>
 
           <div className="text-sm w-full relative">
-            <label className="text-border font-semibold"> Config Password</label>
+            <label className="text-border font-semibold"> Config Password {' '} <span className='text-subMain'>{configPassMsgOut}</span></label>
             <input
                 required
-                ref={configPassword}
+                value={configPassword}
+                onChange={(e)=>setConFigPassword(e.target.value)}
                 type={configPwdShown ? "text" : "password"}
                 placeholder="********"
                 className='w-full text-sm p-4 mt-2 border border-border rounded text-white bg-dry'
@@ -87,11 +132,12 @@ function Register() {
               }
             </button>
           </div>
-          <Link 
-            to="/dashboard"
+          <span className='text-subMain'>{registerMsgOut}</span>
+          <button 
+            onClick={handleClick}
             className="bg-subMain transitions hover:bg-main flex-rows gap-4 text-white py-4 rounded-lg w-full">
               <FiLogIn/> Sign In
-            </Link>
+            </button>
           <p className='text-center text-border'>
             Already have an account?{" "}
             <Link to="/login" className="text-dryGray font-semibold ml-2">

@@ -23,9 +23,11 @@ export const AuthContextProvider = ({ children }) => {
         },
       });
 
-      if (apiResponse.data.status === true) {
+      if (apiResponse.data.status === true && apiResponse.data.userInfo !=0) {
         localStorage.setItem("tokens", JSON.stringify(apiResponse.data));
-        window.location.href = "/";
+        if(apiResponse.data.userInfo.status ==2) window.location.href = "/verify-code";
+        else if(apiResponse.data.userInfo.status==3) window.location.href = "/change-pass";
+        else window.location.href = "/"; 
       }
 
   };
