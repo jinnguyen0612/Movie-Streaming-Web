@@ -17,13 +17,13 @@ function SideBarAdmin() {
   const SideLinks = [
     {
         name:"Dash Board",
-        link:"/",
+        link:"/dashboard",
         mt: true,
         icon:AiFillDashboard
     },
     {
         name:"Customers",
-        link:"/customer",
+        link:"/",
         mt:true,
         icon:BiSolidUser
     },

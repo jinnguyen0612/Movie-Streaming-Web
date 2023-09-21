@@ -21,7 +21,7 @@ function WatchPage() {
   const [currentTime, setCurrentTime] = useState(0);
   const [checkTime,setCheckTime] = useState();
   const [timeStart,setTimeStart] = useState(0);
-  const [showPopup, setShowPopup] = useState(true);
+  const [showPopup, setShowPopup] = useState(false);
   const [firstPlay, setFirstPlay] = useState(true);
 
   const handleStartVideo = () => {
@@ -52,8 +52,6 @@ function WatchPage() {
       return;
     }
     const intValue = Math.floor(currentTime);
-  
-  
   
     if (checkTime) {
 
@@ -137,6 +135,7 @@ function WatchPage() {
           );
           setCheckTime(result?.data.value);
           setTimeStart(result?.data.time);
+          if(checkTime) setShowPopup(true)
           setLoadTime(true);
         } catch (error) {
           // Xử lý lỗi khi gọi API thất bại
@@ -209,7 +208,12 @@ function WatchPage() {
               autoPlay={!showPopup}
               onPlay={(e) => {
                 if (e.target !== null && firstPlay) {
-                  e.target.currentTime = timeStart;
+                  try{
+                    e.target.currentTime = timeStart;
+
+                  }catch{
+
+                  }
                   setFirstPlay(false); // Đặt thời gian bắt đầu khi video bắt đầu phát
                 }
               }}

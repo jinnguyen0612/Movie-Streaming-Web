@@ -42,8 +42,8 @@ function App() {
         <Route path="/login" element={<LoginPage/>}/>
           {permission === 'ADMIN'?
           (<>
-            <Route path="/" element={<DashBoard/>}/>
-            <Route path="/customer" element={<Customer/>}/>
+            <Route path="/dashboard" element={<DashBoard/>}/>
+            <Route path="/" element={<Customer/>}/>
             <Route path="/manage-movie" element={<AdminMovies/>}/>
             <Route path="/genre" element={<Genres/>}/>
             <Route path="/actor" element={<Actor/>}/>
